@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Link Storage with Editable Links</title>
+    <style>
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        
+        iframe {
+            position: fixed;
+            top: 30px;
+            transform: translateY(-50%);
+            left: 0;
+            width: 100%;
+            height: 800px;
+            border: none;
+            z-index: -1;
+            display: none;
+        }
+        
+        li:hover iframe {
+            display: block;
+        }
+        
+        .delete-button {
+            color: red;
+            cursor: pointer;
+        }
+        
+        .edit-button {
+            color: blue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Link Storage with Editable Links</h1>
+    
+    <label for="linkInput">Enter a link:</label>
+    <input type="text" id="linkInput">
+    <br>
+    <label for="descriptionInput">Enter a description:</label>
+    <input type="text" id="descriptionInput">
+    <button onclick="storeLink()">Save Link</button>
+    
+    <ul id="linkList">
+        <!-- Links with descriptions, previews, delete buttons, and edit buttons will be added here -->
+    </ul>
+    
+    <script>
+        let editIndex = -1;
+
+        // Function to store a link and its description in local storage
+        function storeLink() {
+            const linkInput = document.getElementById('linkInput');
+            const descriptionInput = document.getElementById('descriptionInput');
+            const linkList = document.getElementById('linkList');
+            
+            const link = linkInput.value;
+            const description = descriptionInput.value;
+            
+            if (link) {
+                const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+                if (editIndex === -1) {
+                    storedLinks.push({ link, description });
+                } else {
+                    storedLinks[editIndex] = { link, description };
+                    editIndex = -1;
+                }
+                localStorage.setItem('links', JSON.stringify(storedLinks));
+                
+                // Clear input fields and update link list
+                linkInput.value = '';
+                descriptionInput.value = '';
+                displayLinks();
+            }
+        }
+        
+        // Function to delete a link and its description from local storage and the list
+        function deleteLink(index) {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            storedLinks.splice(index, 1);
+            localStorage.setItem('links', JSON.stringify(storedLinks));
+            displayLinks();
+        }
+        
+        // Function to edit a link and its description
+        function editLink(index) {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            const linkData = storedLinks[index];
+            const linkInput = document.getElementById('linkInput');
+            const descriptionInput = document.getElementById('descriptionInput');
+            linkInput.value = linkData.link;
+            descriptionInput.value = linkData.description;
+            editIndex = index;
+        }
+        
+        // Function to display stored links
+        function displayLinks() {
+            const linkList = document.getElementById('linkList');
+            linkList.innerHTML = '';
+            
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            
+            storedLinks.forEach((linkData, index) => {
+                const li = document.createElement('li');
+                
+                const description = document.createElement('p');
+                // description.textContent = linkData.description;
+                description.innerHTML = `<strong><h3>${linkData.description}</h3></strong>`;
+                li.appendChild(description);
+                
+                const a = document.createElement('a');
+                a.href = linkData.link;
+                a.textContent = linkData.link;
+                li.appendChild(a);
+                
+                const editButton = document.createElement('span');
+                editButton.className = 'edit-button';
+                editButton.textContent = ' Edit';
+                editButton.addEventListener('click', () => editLink(index));
+                li.appendChild(editButton);
+                
+                const deleteButton = document.createElement('span');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = ' Delete';
+                deleteButton.addEventListener('click', () => deleteLink(index));
+                li.appendChild(deleteButton);
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = linkData.link;
+                
+                li.appendChild(iframe);
+                linkList.appendChild(li);
+            });
+        }
+        
+        // Initial display of stored links on page load
+        displayLinks();
+    </script>
+</body>
+</html>
