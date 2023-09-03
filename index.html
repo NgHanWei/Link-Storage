@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Link Storage with Editable Links</title>
+    <title>Link Storage with Overlapping Iframes</title>
     <style>
         ul {
             list-style: none;
@@ -17,11 +17,11 @@
         
         iframe {
             position: fixed;
-            top: 30px;
-            transform: translateY(-50%);
+            top: 30px; /* Position at the middle of the screen */
+            transform: translateY(-50%); /* Adjust to center vertically */
             left: 0;
             width: 100%;
-            height: 800px;
+            height: 800px; /* Adjust the height as needed */
             border: none;
             z-index: -1;
             display: none;
@@ -43,7 +43,7 @@
     </style>
 </head>
 <body>
-    <h1>Link Storage with Editable Links</h1>
+    <h1>Link Storage with Overlapping Iframes</h1>
     
     <label for="linkInput">Enter a link:</label>
     <input type="text" id="linkInput">
@@ -51,6 +51,8 @@
     <label for="descriptionInput">Enter a description:</label>
     <input type="text" id="descriptionInput">
     <button onclick="storeLink()">Save Link</button>
+    <button onclick="exportLinks()">Export Links</button>
+    <input type="file" id="importInput" accept=".json" onchange="importLinks(this.files)">
     
     <ul id="linkList">
         <!-- Links with descriptions, previews, delete buttons, and edit buttons will be added here -->
@@ -115,8 +117,7 @@
                 const li = document.createElement('li');
                 
                 const description = document.createElement('p');
-                // description.textContent = linkData.description;
-                description.innerHTML = `<strong><h3>${linkData.description}</h3></strong>`;
+                description.innerHTML = `<strong>${linkData.description}</strong>`;
                 li.appendChild(description);
                 
                 const a = document.createElement('a');
@@ -142,6 +143,32 @@
                 li.appendChild(iframe);
                 linkList.appendChild(li);
             });
+        }
+        
+        // Function to export links as a JSON file
+        function exportLinks() {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            const jsonLinks = JSON.stringify(storedLinks);
+            const blob = new Blob([jsonLinks], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'links.json';
+            a.click();
+        }
+        
+        // Function to import links from a JSON file
+        function importLinks(files) {
+            const file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const importedLinks = JSON.parse(event.target.result);
+                    localStorage.setItem('links', JSON.stringify(importedLinks));
+                    displayLinks();
+                };
+                reader.readAsText(file);
+            }
         }
         
         // Initial display of stored links on page load
