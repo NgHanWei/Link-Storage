@@ -3,7 +3,43 @@
 <head>
     <title>Link Storage with Overlapping Iframes</title>
     <style>
-        /* Styles remain unchanged */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        li {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        
+        iframe {
+            position: fixed;
+            top: 30px; /* Position at the middle of the screen */
+            transform: translateY(-50%); /* Adjust to center vertically */
+            left: 0;
+            width: 100%;
+            height: 800px; /* Adjust the height as needed */
+            border: none;
+            z-index: -1;
+            display: none;
+        }
+        
+        li:hover iframe {
+            display: block;
+        }
+        
+        .delete-button {
+            color: red;
+            cursor: pointer;
+        }
+        
+        .edit-button {
+            color: blue;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -18,10 +54,8 @@
     <button onclick="exportLinks()">Export Links</button>
     <input type="file" id="importInput" accept=".json" onchange="importLinks(this.files)" style="display: none;">
     <button onclick="document.getElementById('importInput').click()">Import Links</button>
+    <button onclick="deleteAllLinks()">Delete All Links</button>
     
-    <!-- Added button to clear all links -->
-    <button onclick="clearAllLinks()">Clear All Links</button>
-
     <ul id="linkList">
         <!-- Links with descriptions, previews, delete buttons, and edit buttons will be added here -->
     </ul>
@@ -29,15 +63,124 @@
     <script>
         let editIndex = -1;
 
-        // Function to clear all links from local storage and update display
-        function clearAllLinks() {
+        // Function to delete all links
+        function deleteAllLinks() {
             localStorage.removeItem('links');
             displayLinks();
         }
 
-        // Rest of the functions remain unchanged
-        // ...
-
+        // Function to store a link and its description in local storage
+        function storeLink() {
+            const linkInput = document.getElementById('linkInput');
+            const descriptionInput = document.getElementById('descriptionInput');
+            const linkList = document.getElementById('linkList');
+            
+            const link = linkInput.value;
+            const description = descriptionInput.value;
+            
+            if (link) {
+                const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+                if (editIndex === -1) {
+                    storedLinks.push({ link, description });
+                } else {
+                    storedLinks[editIndex] = { link, description };
+                    editIndex = -1;
+                }
+                localStorage.setItem('links', JSON.stringify(storedLinks));
+                
+                // Clear input fields and update link list
+                linkInput.value = '';
+                descriptionInput.value = '';
+                displayLinks();
+            }
+        }
+        
+        // Function to delete a link and its description from local storage and the list
+        function deleteLink(index) {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            storedLinks.splice(index, 1);
+            localStorage.setItem('links', JSON.stringify(storedLinks));
+            displayLinks();
+        }
+        
+        // Function to edit a link and its description
+        function editLink(index) {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            const linkData = storedLinks[index];
+            const linkInput = document.getElementById('linkInput');
+            const descriptionInput = document.getElementById('descriptionInput');
+            linkInput.value = linkData.link;
+            descriptionInput.value = linkData.description;
+            editIndex = index;
+        }
+        
+        // Function to display stored links
+        function displayLinks() {
+            const linkList = document.getElementById('linkList');
+            linkList.innerHTML = '';
+            
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            
+            storedLinks.forEach((linkData, index) => {
+                const li = document.createElement('li');
+                
+                const description = document.createElement('p');
+                description.innerHTML = `<strong>${linkData.description}</strong>`;
+                li.appendChild(description);
+                
+                const a = document.createElement('a');
+                a.href = linkData.link;
+                a.textContent = linkData.link;
+                li.appendChild(a);
+                
+                const editButton = document.createElement('span');
+                editButton.className = 'edit-button';
+                editButton.textContent = ' Edit';
+                editButton.addEventListener('click', () => editLink(index));
+                li.appendChild(editButton);
+                
+                const deleteButton = document.createElement('span');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = ' Delete';
+                deleteButton.addEventListener('click', () => deleteLink(index));
+                li.appendChild(deleteButton);
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = linkData.link;
+                
+                li.appendChild(iframe);
+                linkList.appendChild(li);
+            });
+        }
+        
+        // Function to export links as a JSON file
+        function exportLinks() {
+            const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
+            const jsonLinks = JSON.stringify(storedLinks);
+            const blob = new Blob([jsonLinks], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'links.json';
+            a.click();
+        }
+        
+        // Function to import links from a JSON file
+        function importLinks(files) {
+            const file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const importedLinks = JSON.parse(event.target.result);
+                    localStorage.setItem('links', JSON.stringify(importedLinks));
+                    displayLinks();
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        // Initial display of stored links on page load
+        displayLinks();
     </script>
 </body>
 </html>
