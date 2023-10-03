@@ -3,29 +3,41 @@
 <head>
     <title>Link Storage with Overlapping Iframes</title>
     <style>
-        /* Existing CSS styles remain unchanged */
-
-        /* Add a style for the "Delete All" button */
-        #deleteAllButton {
-            color: red;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        /* Styles remain unchanged */
     </style>
 </head>
 <body>
-    <!-- Existing HTML content remains unchanged -->
+    <h1>Link Storage with Overlapping Iframes</h1>
+    
+    <label for="linkInput">Enter a link:</label>
+    <input type="text" id="linkInput">
+    <br>
+    <label for="descriptionInput">Enter a description:</label>
+    <input type="text" id="descriptionInput">
+    <button onclick="storeLink()">Save Link</button>
+    <button onclick="exportLinks()">Export Links</button>
+    <input type="file" id="importInput" accept=".json" onchange="importLinks(this.files)" style="display: none;">
+    <button onclick="document.getElementById('importInput').click()">Import Links</button>
+    
+    <!-- Added button to clear all links -->
+    <button onclick="clearAllLinks()">Clear All Links</button>
 
-    <button id="deleteAllButton" onclick="deleteAllLinks()">Delete All Links</button>
-
+    <ul id="linkList">
+        <!-- Links with descriptions, previews, delete buttons, and edit buttons will be added here -->
+    </ul>
+    
     <script>
-        // Existing JavaScript functions remain unchanged
+        let editIndex = -1;
 
-        // Function to delete all links from local storage and the list
-        function deleteAllLinks() {
+        // Function to clear all links from local storage and update display
+        function clearAllLinks() {
             localStorage.removeItem('links');
             displayLinks();
         }
+
+        // Rest of the functions remain unchanged
+        // ...
+
     </script>
 </body>
 </html>
