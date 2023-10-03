@@ -46,7 +46,8 @@
     <h1>Link Storage with Overlapping Iframes</h1>
     
     <label for="linkInput">Enter a link:</label>
-    <input type="text" id="linkInput">
+    <input type="text" id="linkInput" onkeydown="checkEnter(event)">
+    <br>
     <br>
     <label for="descriptionInput">Enter a description:</label>
     <input type="text" id="descriptionInput">
@@ -94,7 +95,14 @@
                 displayLinks();
             }
         }
-        
+
+        // Function to check if Enter key is pressed and trigger storeLink()
+        function checkEnter(event) {
+            if (event.keyCode === 13) {  // 13 is the key code for Enter
+                storeLink();
+            }
+        }
+    
         // Function to delete a link and its description from local storage and the list
         function deleteLink(index) {
             const storedLinks = JSON.parse(localStorage.getItem('links')) || [];
